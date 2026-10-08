@@ -714,6 +714,19 @@ static bool KytyExceptionHandler(const Common::HostException::ExceptionInfo& exc
 		}
 		std::fflush(stdout);
 
+		// Query the guest virtual range covering the fault to get its owner name
+		{
+			Libs::LibKernel::Memory::VirtualQueryInfo vq {};
+			const auto* vq_addr = reinterpret_cast<const void*>(info->exception_address);
+			if (Libs::LibKernel::Memory::KernelVirtualQuery(vq_addr, 0, &vq, sizeof(vq)) == 0) {
+				std::printf("fault pc region = %016" PRIx64 "-%016" PRIx64 ", protection=0x%x, type=%d, name=\"%s\"\n",
+				            static_cast<uint64_t>(vq.start), static_cast<uint64_t>(vq.end),
+				            vq.protection, vq.memory_type, vq.name);
+			} else {
+				std::printf("fault pc region = <unknown>\n");
+			}
+		}
+
 		// Resolve the faulting pc and the guest rbp chain against the loaded
 		// modules so the crash can be tied to a specific program + offset
 		// instead of raw addresses only.
