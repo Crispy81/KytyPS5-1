@@ -724,6 +724,12 @@ static bool KytyExceptionHandler(const Common::HostException::ExceptionInfo& exc
 				            vq.protection, vq.memory_type, vq.name);
 			} else {
 				std::printf("fault pc region = <unknown>\n");
+				Libs::LibKernel::Memory::VirtualQueryInfo vq_next {};
+				if (Libs::LibKernel::Memory::KernelVirtualQuery(vq_addr, 1, &vq_next, sizeof(vq_next)) == 0) {
+					std::printf("next guest region after fault pc = %016" PRIx64 "-%016" PRIx64 ", protection=0x%x, type=%d, name=\"%s\"\n",
+					            static_cast<uint64_t>(vq_next.start), static_cast<uint64_t>(vq_next.end),
+					            vq_next.protection, vq_next.memory_type, vq_next.name);
+				}
 			}
 		}
 
