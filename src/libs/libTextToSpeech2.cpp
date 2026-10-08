@@ -21,11 +21,27 @@ static int KYTY_SYSV_ABI TextToSpeech2Cancel() {
 	return OK;
 }
 
+static int KYTY_SYSV_ABI TextToSpeech2Initialize() {
+	PRINT_NAME();
+
+	return OK;
+}
+
+static int KYTY_SYSV_ABI TextToSpeech2Open(void* handle, const void* param) {
+	(void)handle;
+	(void)param;
+	PRINT_NAME();
+
+	return OK;
+}
+
 } // namespace TextToSpeech2
 
 LIB_DEFINE(InitTextToSpeech2_1) {
 	LIB_FUNC("08JSg9p6bgQ", TextToSpeech2::TextToSpeech2GetSpeechStatus);
 	LIB_FUNC("2jiIxUmcsGo", TextToSpeech2::TextToSpeech2Cancel);
+	LIB_FUNC("UOjiprYwVNw", TextToSpeech2::TextToSpeech2Initialize);
+	LIB_FUNC("X0HZNbSiqyg", TextToSpeech2::TextToSpeech2Open);
 }
 
 } // namespace Libs

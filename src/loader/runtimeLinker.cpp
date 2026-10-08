@@ -713,6 +713,44 @@ static bool KytyExceptionHandler(const Common::HostException::ExceptionInfo& exc
 			std::printf("\n");
 		}
 		std::fflush(stdout);
+
+		// Resolve the faulting pc and the guest rbp chain against the loaded
+		// modules so the crash can be tied to a specific program + offset
+		// instead of raw addresses only.
+		if (auto* linker = Common::Singleton<RuntimeLinker>::Instance(); linker != nullptr) {
+			if (Program* p = linker->FindProgramByAddr(info->exception_address); p != nullptr) {
+				std::printf("fault pc -> %016" PRIx64 " in %s, off=0x%" PRIx64 "\n",
+				            info->exception_address,
+				            Common::FilenameWithoutDirectory(
+				                Common::PathToGenericString(p->file_name))
+				                .c_str(),
+				            info->exception_address - p->base_vaddr);
+			} else {
+				std::printf("fault pc -> %016" PRIx64 " in <no module>\n", info->exception_address);
+			}
+			uint64_t frame = info->rbp;
+			for (int i = 0; i < 20 && frame != 0 && IsReadableRange(frame, 2 * sizeof(uint64_t));
+			     i++) {
+				uint64_t prev = *reinterpret_cast<uint64_t*>(frame);
+				uint64_t ret  = *reinterpret_cast<uint64_t*>(frame + sizeof(uint64_t));
+				if (Program* p = linker->FindProgramByAddr(ret); p != nullptr) {
+					std::printf("[%d] ret=%016" PRIx64 " in %s, off=0x%" PRIx64 " (frame=%016" PRIx64 ")\n",
+					            i, ret,
+					            Common::FilenameWithoutDirectory(
+					                Common::PathToGenericString(p->file_name))
+					                .c_str(),
+					            ret - p->base_vaddr, frame);
+				} else {
+					std::printf("[%d] ret=%016" PRIx64 " in <no module> (frame=%016" PRIx64 ")\n", i, ret,
+					            frame);
+				}
+				if (prev <= frame) {
+					break;
+				}
+				frame = prev;
+			}
+			std::fflush(stdout);
+		}
 	}
 	EXIT("Unhandled host exception: type=%u code=%u pc=0x%016" PRIx64
 	     " access=%u address=0x%016" PRIx64 "\n",

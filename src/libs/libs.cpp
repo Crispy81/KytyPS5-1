@@ -90,6 +90,7 @@ LIB_DEFINE(InitAgcDriver_1);
 LIB_DEFINE(InitHmd2_1);
 LIB_DEFINE(InitLibKernel_1);
 LIB_DEFINE(InitNet_1);
+LIB_DEFINE(InitNpCppWebApi_1);
 LIB_DEFINE(InitPad_1);
 LIB_DEFINE(InitPlayGo_1);
 LIB_DEFINE(InitPngDec_1);
@@ -132,6 +133,7 @@ void InitAll(Loader::SymbolDatabase* s) {
 	LibKeyboard::InitKeyboard_1(s);
 	Ime::InitPlatform_1_Ime(s);
 	InitNet_1(s);
+	InitNpCppWebApi_1(s);
 	InitPad_1(s);
 	InitPlayGo_1(s);
 	LibPsml::InitPsml_1(s);
